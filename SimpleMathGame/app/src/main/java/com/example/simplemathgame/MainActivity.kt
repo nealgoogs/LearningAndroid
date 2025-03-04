@@ -2,6 +2,7 @@ package com.example.simplemathgame
 
 import android.graphics.Color
 import android.os.Bundle
+import android.view.Gravity
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -16,12 +17,26 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonPlus: Button
     private lateinit var buttonMinus: Button
     private lateinit var buttonMultiply: Button
+    private lateinit var buttonDivide: Button
     private lateinit var resetButton: Button
 
     private var currentOperator: Char = '+'
     private var totalQuestions = 0
     private var correctAnswers = 0
     private var consecutiveCorrect = 0
+    private var num1: Int = 0
+    private var num2: Int = 0
+    private var result: Int = 0
+
+    //Make toast messages more fun
+    private val praiseMessages = listOf(
+        "Godly!!!!",
+        "Math genius!!!!",
+        "Next Albert Einstein????",
+        "Unstoppable!",
+        "Legendary brainpower!",
+        "You're on fire!"
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,85 +49,87 @@ class MainActivity : AppCompatActivity() {
         buttonPlus = findViewById(R.id.buttonPlus)
         buttonMinus = findViewById(R.id.buttonMinus)
         buttonMultiply = findViewById(R.id.buttonMultiply)
+        buttonDivide = findViewById(R.id.buttonDivide)
         resetButton = findViewById(R.id.resetButton)
 
-        // Set up listeners for the operator buttons
-        buttonPlus.setOnClickListener { checkAnswer('+') }
-        buttonMinus.setOnClickListener { checkAnswer('-') }
-        buttonMultiply.setOnClickListener { checkAnswer('*') }
+        buttonPlus.setOnClickListener { onOperatorSelected('+') }
+        buttonMinus.setOnClickListener { onOperatorSelected('-') }
+        buttonMultiply.setOnClickListener { onOperatorSelected('*') }
+        buttonDivide.setOnClickListener { onOperatorSelected('/') }
 
-        // Reset button starts a new game
+
         resetButton.setOnClickListener { resetGame() }
 
-        // Start the first puzzle
         generateNewPuzzle()
     }
 
-    // Generates a new puzzle
+    //Math logic
     private fun generateNewPuzzle() {
-        // Randomly choose an operator from the list
-        val operators = listOf('+', '-', '*')
+        val operators = listOf('+', '-', '*', '/')
         currentOperator = operators.random()
 
-        // Generate two-digit numbers based on given ranges:
-        // 11 ≤ randomNumber1 < 100 and 10 ≤ randomNumber2 < 99.
-        var num1: Int
-        var num2: Int
-
-        if (currentOperator == '-') {
-            // Ensure the first number is greater than the second for subtraction.
-            do {
+        when (currentOperator) {
+            '-' -> {
+                do {
+                    num1 = Random.nextInt(11, 100)
+                    num2 = Random.nextInt(10, 99)
+                } while (num1 <= num2)
+            }
+            '/' -> {
+                do {
+                    num2 = Random.nextInt(2, 20) // Ensure non-zero divisor
+                    num1 = num2 * Random.nextInt(2, 10) // Ensure integer result
+                } while (num1 % num2 != 0 || num1 == 0)
+            }
+            else -> {
                 num1 = Random.nextInt(11, 100)
                 num2 = Random.nextInt(10, 99)
-            } while (num1 <= num2)
-        } else {
-            num1 = Random.nextInt(11, 100)
-            num2 = Random.nextInt(10, 99)
+            }
         }
 
-        // Compute the result based on the chosen operator.
-        val result = when (currentOperator) {
+        result = when (currentOperator) {
             '+' -> num1 + num2
             '-' -> num1 - num2
             '*' -> num1 * num2
+            '/' -> num1 / num2
             else -> 0
         }
 
-        // Display the puzzle with a question mark instead of the operator.
         puzzleTextView.text = "$num1 ? $num2 = $result"
-        // Clear any previous feedback.
         feedbackTextView.text = ""
+        // Hide feedback until an answer is selected
     }
 
-    // Checks the user’s answer when an operator button is clicked.
+    //Hacky thing to make correct and wrong text show up
+    private fun onOperatorSelected(selectedOperator: Char) {
+        checkAnswer(selectedOperator)
+        feedbackTextView.visibility = TextView.VISIBLE
+        feedbackTextView.postDelayed({ generateNewPuzzle() }, 1500)
+    }
+
     private fun checkAnswer(selectedOperator: Char) {
         totalQuestions++
+
         if (selectedOperator == currentOperator) {
             correctAnswers++
             consecutiveCorrect++
             feedbackTextView.text = "Correct!"
             feedbackTextView.setTextColor(Color.GREEN)
-            // Every time the user gets 3 consecutive correct answers, show a congratulatory Toast.
             if (consecutiveCorrect % 3 == 0) {
-                Toast.makeText(
-                    this,
-                    "Great job! You've answered $consecutiveCorrect in a row!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val randomPraise = praiseMessages.random()
+                val toast = Toast.makeText(this, "$randomPraise You've answered $consecutiveCorrect in a row!", Toast.LENGTH_SHORT)
+                toast.setGravity(Gravity.CENTER, 0, 0)
+                toast.show()
             }
         } else {
-            feedbackTextView.text = "Wrong! The correct answer is $currentOperator"
+            feedbackTextView.text = "Wrong! $num1 $currentOperator $num2 = $result"
             feedbackTextView.setTextColor(Color.RED)
-            // Reset the consecutive counter if the answer is incorrect.
             consecutiveCorrect = 0
         }
-        // Update score display.
+
         scoreTextView.text = "Score: $correctAnswers/$totalQuestions"
-        // Generate the next puzzle.
-        generateNewPuzzle()
     }
 
-    // Resets the game to the initial state.
     private fun resetGame() {
         totalQuestions = 0
         correctAnswers = 0
