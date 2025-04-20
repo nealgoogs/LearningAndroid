@@ -17,7 +17,8 @@ data class Event(
     @SerializedName("_embedded")
     val embedded: EventVenues,
     val priceRanges: List<PriceRange>?,
-    val images: List<Image>
+    val images: List<Image>,
+    val url: String?
 )
 
 data class Dates(
@@ -36,7 +37,8 @@ data class EventVenues(
 data class Venue(
     val name: String,
     val address: Address,
-    val city: City
+    val city: City,
+    val state: State
 )
 
 data class Address(
@@ -47,20 +49,30 @@ data class City(
     val name: String
 )
 
+data class State(
+    val stateCode: String
+)
+
+// Couldn't get this to work???
 data class PriceRange(
     val min: Double,
     val max: Double
 )
 
 data class Image(
-    val url: String
+    val url: String,
+    val width: Int,
+    val height: Int
 )
 
+
+// RecyclerView info
 data class Ticket(
     val eventName: String,
     val venueName: String,
     val venueAddress: String,
     val dateTime: String,
-    val priceRange: String
+    val priceRange: String,
+    val imageUrl: String,
+    val ticketUrl: String
 )
-

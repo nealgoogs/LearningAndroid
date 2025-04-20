@@ -1,5 +1,8 @@
 package com.example.hw_4
 
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,17 +10,18 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 
 class TicketAdapter(private val ticketList: List<Ticket>) : RecyclerView.Adapter<TicketAdapter.TicketViewHolder>() {
 
-    inner class TicketViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val eventImage: ImageView = itemView.findViewById(R.id.eventImage)
-        val eventName: TextView = itemView.findViewById(R.id.eventName)
-        val venueName: TextView = itemView.findViewById(R.id.venueName)
-        val venueAddress: TextView = itemView.findViewById(R.id.venueAddress)
-        val eventDateTime: TextView = itemView.findViewById(R.id.eventDateTime)
-        val priceRange: TextView = itemView.findViewById(R.id.priceRange)
-        val seeTicketsButton: Button = itemView.findViewById(R.id.seeTicketsButton)
+    class TicketViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        var eventImage: ImageView = itemView.findViewById(R.id.eventImage)
+        var eventName: TextView = itemView.findViewById(R.id.eventName)
+        var venueName: TextView = itemView.findViewById(R.id.venueName)
+        var venueAddress: TextView = itemView.findViewById(R.id.venueAddress)
+        var eventDateTime: TextView = itemView.findViewById(R.id.eventDateTime)
+        var priceRange: TextView = itemView.findViewById(R.id.priceRange)
+        var seeTicketsButton: Button = itemView.findViewById(R.id.seeTicketsButton)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TicketViewHolder {
@@ -27,18 +31,25 @@ class TicketAdapter(private val ticketList: List<Ticket>) : RecyclerView.Adapter
 
     override fun onBindViewHolder(holder: TicketViewHolder, position: Int) {
         val ticket = ticketList[position]
+
         holder.eventName.text = ticket.eventName
         holder.venueName.text = ticket.venueName
         holder.venueAddress.text = ticket.venueAddress
         holder.eventDateTime.text = ticket.dateTime
         holder.priceRange.text = ticket.priceRange
 
+        Log.d("TicketAdapter", "Ticket should be binded: ${ticket.eventName}")
 
-        // You can also set an onClickListener for the "See Tickets" button if needed
+        Glide.with(holder.itemView.context)
+            .load(ticket.imageUrl)
+            .into(holder.eventImage)
+
         holder.seeTicketsButton.setOnClickListener {
-            // TODO: Handle button click
+            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(ticket.ticketUrl))
+            holder.itemView.context.startActivity(browserIntent)
         }
     }
+
 
     override fun getItemCount(): Int {
         return ticketList.size
